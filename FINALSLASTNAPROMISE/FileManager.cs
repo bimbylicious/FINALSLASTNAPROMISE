@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace FINALSLASTNAPROMISE
 {
     internal class FileManager
     {
-        private const string TaskFilesDirectory = "TaskFiles";
+        private const string TaskFilesDirectory = "TaskFiles.csv";
 
         public void SaveTasks(List<TaskItem> tasks)
         {
@@ -25,7 +24,7 @@ namespace FINALSLASTNAPROMISE
                     lines.Add(line);
                 }
 
-                File.WriteAllLines("tasks.csv", lines);
+                File.WriteAllLines(TaskFilesDirectory, lines);
                 Console.WriteLine("Tasks saved to file.");
             }
             catch (Exception ex)
@@ -40,9 +39,9 @@ namespace FINALSLASTNAPROMISE
 
             try
             {
-                if (File.Exists("tasks.csv"))
+                if (File.Exists(TaskFilesDirectory))
                 {
-                    string[] lines = File.ReadAllLines("tasks.csv");
+                    string[] lines = File.ReadAllLines(TaskFilesDirectory);
 
                     foreach (string line in lines)
                     {
@@ -52,34 +51,32 @@ namespace FINALSLASTNAPROMISE
                         {
                             string taskName = parts[0];
                             string taskDetails = parts[1];
-                            if (DateTime.TryParse(parts[2], out DateTime creationTime) &&
-                                DateTime.TryParse(parts[3], out DateTime deadline))
+                            string creationTime = parts[2];
+                            string deadline = parts[3];
+                            string details = parts[4];
+                            string taskStatus = parts[5];
+                            string comments = parts[6];
+
+                            TaskItem loadedTask;
+
+                            if (taskStatus.ToLower() == "assigned" || taskStatus.ToLower() == "completed")
                             {
-                                string details = parts[4];
-                                string taskStatus = parts[5];
-                                string comments = parts[6];
+                                string[] assignedDetails = details.Split(',');
+                                string statusDetails = assignedDetails.Length > 0 ? assignedDetails[0] : "";
+                                string statusDate = assignedDetails.Length > 1 ? assignedDetails[1] : "";
 
-                                TaskItem loadedTask;
-
-                                if (taskStatus.ToLower() == "assigned" || taskStatus.ToLower() == "completed")
+                                loadedTask = new TaskItem(taskName, taskDetails, creationTime, deadline, comments, taskStatus)
                                 {
-                                    string[] assignedDetails = details.Split(',');
-                                    string statusDetails = assignedDetails.Length > 0 ? assignedDetails[0] : "";
-                                    DateTime statusDate = assignedDetails.Length > 1 ? DateTime.Parse(assignedDetails[1]) : DateTime.MinValue;
-
-                                    loadedTask = new TaskItem(taskName, taskDetails, creationTime, deadline, comments, taskStatus)
-                                    {
-                                        StatusDetails = statusDetails,
-                                        StatusDate = statusDate
-                                    };
-                                }
-                                else
-                                {
-                                    loadedTask = new TaskItem(taskName, taskDetails, creationTime, deadline, comments, taskStatus);
-                                }
-
-                                loadedTasks.Add(loadedTask);
+                                    StatusDetails = statusDetails,
+                                    StatusDate = statusDate
+                                };
                             }
+                            else
+                            {
+                                loadedTask = new TaskItem(taskName, taskDetails, creationTime, deadline, comments, taskStatus);
+                            }
+
+                            loadedTasks.Add(loadedTask);
                         }
                     }
 
@@ -96,42 +93,6 @@ namespace FINALSLASTNAPROMISE
             }
 
             return loadedTasks;
-        }
-
-        private TaskItem CreateTaskFromParts(string[] parts)
-        {
-            if (DateTime.TryParse(parts[2], out DateTime creationTime) &&
-                DateTime.TryParse(parts[3], out DateTime deadline))
-            {
-                string details = parts[4];
-                string taskStatus = parts[5];
-                string comments = parts[6];
-
-                if (taskStatus.ToLower() == "assigned" || taskStatus.ToLower() == "completed")
-                {
-                    string[] assignedDetails = details.Split(',');
-                    string statusDetails = assignedDetails.Length > 0 ? assignedDetails[0] : "";
-                    DateTime statusDate = assignedDetails.Length > 1 ? DateTime.Parse(assignedDetails[1]) : DateTime.MinValue;
-
-                    return new TaskItem(parts[0], parts[1], creationTime, deadline, comments, taskStatus)
-                    {
-                        StatusDetails = statusDetails,
-                        StatusDate = statusDate
-                    };
-                }
-                else
-                {
-                    return new TaskItem(parts[0], parts[1], creationTime, deadline, comments, taskStatus);
-                }
-            }
-
-            return null;
-        }
-
-        private string GetFilePath(string status)
-        {
-            string fileName = $"{status.ToLower()}_tasks.csv";
-            return Path.Combine(TaskFilesDirectory, fileName);
         }
     }
 }

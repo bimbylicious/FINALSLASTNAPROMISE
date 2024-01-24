@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 
 namespace FINALSLASTNAPROMISE
 {
@@ -59,25 +59,23 @@ namespace FINALSLASTNAPROMISE
             Console.Write("Enter the task details: ");
             string taskDetails = Console.ReadLine();
 
-            Console.Write("Enter the deadline (e.g., 2024-12-31): ");
-            string deadlineStr = Console.ReadLine();
-            if (DateTime.TryParse(deadlineStr, out DateTime deadline))
-            {
-                Console.Write("Enter comments: ");
-                string comments = Console.ReadLine();
+            Console.Write("Enter the creation time (e.g., 2024-01-01 12:00:00): ");
+            string creationTime = Console.ReadLine();
 
-                Console.Write("Enter the status (Open/Assigned/Completed): ");
-                string status = Console.ReadLine();
+            Console.Write("Enter the deadline (e.g., 2024-12-31 23:59:59): ");
+            string deadline = Console.ReadLine();
 
-                TaskItem task = new TaskItem(taskName, taskDetails, DateTime.Now, deadline, comments, status);
-                tasks.Add(task);
+            Console.Write("Enter comments: ");
+            string comments = Console.ReadLine();
 
-                Console.WriteLine("Task created successfully!");
-            }
-            else
-            {
-                Console.WriteLine("Invalid deadline format. Task creation aborted.");
-            }
+            Console.Write("Enter the status (Open/Assigned/Completed): ");
+            string status = Console.ReadLine();
+
+            TaskItem task = new TaskItem(taskName, taskDetails, creationTime, deadline, comments, status);
+            tasks.Add(task);
+            fileManager.SaveTasks(tasks);
+
+            Console.WriteLine("Task created successfully!");
         }
 
         private void ViewTasks()
@@ -190,22 +188,16 @@ namespace FINALSLASTNAPROMISE
             Console.Write("Enter your name: ");
             string userName = Console.ReadLine();
 
-            Console.Write("Enter the estimated date of completion (e.g., 2024-12-31): ");
-            string completionDateStr = Console.ReadLine();
+            Console.Write("Enter the estimated date of completion (e.g., 2024-12-31 23:59:59): ");
+            string completionDate = Console.ReadLine();
 
-            if (DateTime.TryParse(completionDateStr, out DateTime completionDate))
-            {
-                // Update task details
-                task.Status = "Assigned";
-                task.Comments += $"\nAssigned to: {userName}\nEstimated Completion Date: {completionDate}";
+            // Update task details
+            task.Status = "Assigned";
+            task.Comments += $"\nAssigned to: {userName}\nEstimated Completion Date: {completionDate}";
 
-                Console.WriteLine("Task assigned successfully!");
-            }
-            else
-            {
-                Console.WriteLine("Invalid date format. Task assignment aborted.");
-            }
+            Console.WriteLine("Task assigned successfully!");
         }
+
         private void CompleteTask(TaskItem task)
         {
             // Update task details

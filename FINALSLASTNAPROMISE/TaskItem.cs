@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace FINALSLASTNAPROMISE
 {
@@ -10,14 +8,14 @@ namespace FINALSLASTNAPROMISE
     {
         public string TaskName { get; }
         public string TaskDetails { get; }
-        public DateTime CreationTime { get; }
-        public DateTime Deadline { get; }
+        public string CreationTime { get; }
+        public string Deadline { get; }
         public string Comments { get; set; } // Make 'Comments' property settable
         public string Status { get; set; }
         public string StatusDetails { get; set; }
-        public DateTime StatusDate { get; set; }
+        public string StatusDate { get; set; }
 
-        public TaskItem(string taskName, string taskDetails, DateTime creationTime, DateTime deadline, string comments, string status)
+        public TaskItem(string taskName, string taskDetails, string creationTime, string deadline, string comments, string status)
         {
             TaskName = taskName;
             TaskDetails = taskDetails;
@@ -29,7 +27,7 @@ namespace FINALSLASTNAPROMISE
 
         public override string ToString()
         {
-            return $"{TaskName} - Created: {CreationTime}, Deadline: {Deadline}, Status: {Status}, Comments: {Comments}";
+            return $"{TaskName},{TaskDetails},{CreationTime},{Deadline},{StatusDetails},{Status},{Comments}";
         }
     }
 }
