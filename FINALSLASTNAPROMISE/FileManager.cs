@@ -14,13 +14,18 @@ namespace FINALSLASTNAPROMISE
             {
                 List<string> lines = new List<string>();
 
+                // Header line
+                lines.Add("TaskName,TaskDetails,CreationTime,AssignedTo,AssignmentTime,CompletionTime,TaskStatus,Comments");
+
                 foreach (TaskItem task in tasks)
                 {
-                    string statusDetails = task.Status.ToLower() == "assigned"
-                        ? $"{task.StatusDetails},{task.StatusDate}"
+                    string assignedDetails = task.Status.ToLower() == "assigned"
+                        ? $"{task.AssignedTo},{task.AssignmentTime}"
                         : "";
 
-                    string line = $"{task.TaskName},{task.TaskDetails},{task.CreationTime},{task.Deadline},{statusDetails},{task.Status},{task.Comments}";
+                    string completionTime = task.CompletionTime == null ? "" : task.CompletionTime;
+
+                    string line = $"{task.TaskName},{task.TaskDetails},{task.CreationTime},{assignedDetails},{completionTime},{task.Status},{task.Comments}";
                     lines.Add(line);
                 }
 
@@ -43,39 +48,24 @@ namespace FINALSLASTNAPROMISE
                 {
                     string[] lines = File.ReadAllLines(TaskFilesDirectory);
 
-                    foreach (string line in lines)
+                    // Skip the first line (header)
+                    for (int i = 1; i < lines.Length; i++)
                     {
+                        string line = lines[i];
                         string[] parts = line.Split(',');
 
-                        if (parts.Length == 7)
+                        if (parts.Length == 8) // Adjust the length based on the number of columns
                         {
                             string taskName = parts[0];
                             string taskDetails = parts[1];
                             string creationTime = parts[2];
-                            string deadline = parts[3];
-                            string details = parts[4];
-                            string taskStatus = parts[5];
-                            string comments = parts[6];
+                            string assignedTo = parts[3];
+                            string assignmentTime = parts[4];
+                            string completionTime = parts[5];
+                            string taskStatus = parts[6];
+                            string comments = parts[7];
 
-                            TaskItem loadedTask;
-
-                            if (taskStatus.ToLower() == "assigned" || taskStatus.ToLower() == "completed")
-                            {
-                                string[] assignedDetails = details.Split(',');
-                                string statusDetails = assignedDetails.Length > 0 ? assignedDetails[0] : "";
-                                string statusDate = assignedDetails.Length > 1 ? assignedDetails[1] : "";
-
-                                loadedTask = new TaskItem(taskName, taskDetails, creationTime, deadline, comments, taskStatus)
-                                {
-                                    StatusDetails = statusDetails,
-                                    StatusDate = statusDate
-                                };
-                            }
-                            else
-                            {
-                                loadedTask = new TaskItem(taskName, taskDetails, creationTime, deadline, comments, taskStatus);
-                            }
-
+                            TaskItem loadedTask = new TaskItem(taskName, taskDetails, creationTime, assignedTo, assignmentTime, completionTime, comments, taskStatus);
                             loadedTasks.Add(loadedTask);
                         }
                     }
@@ -93,6 +83,17 @@ namespace FINALSLASTNAPROMISE
             }
 
             return loadedTasks;
+        }
+
+        public void Writer(List<TaskItem> Task)
+        {
+            using (StreamWriter sr = new StreamWriter(TaskFilesDirectory))
+            {
+                for (int x = 0; x < Task.Count; x++)
+                {
+                    sr.Write(Task[x]);
+                }
+            }
         }
     }
 }

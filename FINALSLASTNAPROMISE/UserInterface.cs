@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
+using System;
 
 namespace FINALSLASTNAPROMISE
 {
@@ -59,20 +58,38 @@ namespace FINALSLASTNAPROMISE
             Console.Write("Enter the task details: ");
             string taskDetails = Console.ReadLine();
 
-            Console.Write("Enter the creation time (e.g., 2024-01-01 12:00:00): ");
-            string creationTime = Console.ReadLine();
+            string creationTime = DateTime.Now.ToString(); // Timestamp when the task was created
 
-            Console.Write("Enter the deadline (e.g., 2024-12-31 23:59:59): ");
-            string deadline = Console.ReadLine();
+            Console.Write("Enter who the task is assigned to: ");
+            string assignedTo = Console.ReadLine();
+
+            string assignmentTime = ""; // Initialize as an empty string
+            string completionTime = ""; // Initialize as an empty string
+
+            // If the task is assigned, capture the assignment time
+            if (assignedTo.Length > 0)
+            {
+                assignmentTime = DateTime.Now.ToString();
+            }
+
+            // If the task is completed, capture the completion time
+            Console.Write("Is the task completed? (yes/no): ");
+            string isCompleted = Console.ReadLine().ToLower();
+
+            if (isCompleted == "yes")
+            {
+                completionTime = DateTime.Now.ToString();
+            }
+
+            Console.Write("Enter the task status (Open/Assigned/For Verification/For Revision/Closed): ");
+            string status = Console.ReadLine();
 
             Console.Write("Enter comments: ");
             string comments = Console.ReadLine();
 
-            Console.Write("Enter the status (Open/Assigned/Completed): ");
-            string status = Console.ReadLine();
-
-            TaskItem task = new TaskItem(taskName, taskDetails, creationTime, deadline, comments, status);
+            TaskItem task = new TaskItem(taskName, taskDetails, creationTime, assignedTo, assignmentTime, completionTime, status, comments);
             tasks.Add(task);
+            fileManager.Writer(tasks);
             fileManager.SaveTasks(tasks);
 
             Console.WriteLine("Task created successfully!");
@@ -91,19 +108,19 @@ namespace FINALSLASTNAPROMISE
             switch (userInput)
             {
                 case "1":
-                    DisplayTaskNames(tasks);
+                    DisplayTaskDetails(tasks);
                     break;
 
                 case "2":
-                    DisplayTaskNamesByStatus("Open");
+                    DisplayTaskDetailsByStatus("Open");
                     break;
 
                 case "3":
-                    DisplayTaskNamesByStatus("Assigned");
+                    DisplayTaskDetailsByStatus("Assigned");
                     break;
 
                 case "4":
-                    DisplayTaskNamesByStatus("Completed");
+                    DisplayTaskDetailsByStatus("Closed");
                     break;
 
                 default:
@@ -112,12 +129,12 @@ namespace FINALSLASTNAPROMISE
             }
         }
 
-        private void DisplayTaskNames(List<TaskItem> tasksToDisplay)
+        private void DisplayTaskDetails(List<TaskItem> tasksToDisplay)
         {
-            Console.WriteLine("Task Names:");
+            Console.WriteLine("Task Details:");
             for (int i = 0; i < tasksToDisplay.Count; i++)
             {
-                Console.WriteLine($"{i + 1}. {tasksToDisplay[i].TaskName}");
+                Console.WriteLine($"{i + 1}. {tasksToDisplay[i]}");
             }
 
             Console.Write("Enter the number of the task to view details (0 to go back): ");
@@ -129,11 +146,11 @@ namespace FINALSLASTNAPROMISE
             }
         }
 
-        private void DisplayTaskNamesByStatus(string status)
+        private void DisplayTaskDetailsByStatus(string status)
         {
             List<TaskItem> filteredTasks = tasks.FindAll(task => task.Status == status);
-            Console.WriteLine($"{status} Task Names:");
-            DisplayTaskNames(filteredTasks);
+            Console.WriteLine($"{status} Task Details:");
+            DisplayTaskDetails(filteredTasks);
         }
 
         private void ViewTaskDetails(TaskItem task)
@@ -141,13 +158,15 @@ namespace FINALSLASTNAPROMISE
             Console.WriteLine($"Task Details for {task.TaskName}:");
             Console.WriteLine($"Task Details: {task.TaskDetails}");
             Console.WriteLine($"Creation Time: {task.CreationTime}");
-            Console.WriteLine($"Deadline: {task.Deadline}");
+            Console.WriteLine($"Assigned To: {task.AssignedTo}");
+            Console.WriteLine($"Assignment Time: {task.AssignmentTime}");
+            Console.WriteLine($"Completion Time: {task.CompletionTime}");
             Console.WriteLine($"Status: {task.Status}");
             Console.WriteLine($"Comments: {task.Comments}");
 
             if (task.Status == "Open")
             {
-                Console.Write("Do you want to assign this task to yourself? (yes/no): ");
+                Console.Write("Do you want to assign this task to someone? (yes/no): ");
                 string assignInput = Console.ReadLine().ToLower();
 
                 if (assignInput == "yes")
@@ -155,56 +174,18 @@ namespace FINALSLASTNAPROMISE
                     AssignTask(task);
                 }
             }
-            else if (task.Status == "Assigned")
-            {
-                Console.Write("Is the task now completed? (yes/no): ");
-                string completeInput = Console.ReadLine().ToLower();
-
-                if (completeInput == "yes")
-                {
-                    CompleteTask(task);
-                }
-            }
-        }
-
-        private void DisplayTasks(List<TaskItem> tasksToDisplay)
-        {
-            Console.WriteLine("Tasks:");
-            for (int i = 0; i < tasksToDisplay.Count; i++)
-            {
-                Console.WriteLine($"{i + 1}. {tasksToDisplay[i]}");
-            }
-        }
-
-        private void DisplayTasksByStatus(string status)
-        {
-            List<TaskItem> filteredTasks = tasks.FindAll(task => task.Status == status);
-            Console.WriteLine($"{status} Tasks:");
-            DisplayTasks(filteredTasks);
         }
 
         private void AssignTask(TaskItem task)
         {
-            Console.Write("Enter your name: ");
-            string userName = Console.ReadLine();
-
-            Console.Write("Enter the estimated date of completion (e.g., 2024-12-31 23:59:59): ");
-            string completionDate = Console.ReadLine();
+            Console.Write("Enter the name of the person or team to whom you want to assign the task: ");
+            string assignedTo = Console.ReadLine();
 
             // Update task details
-            task.Status = "Assigned";
-            task.Comments += $"\nAssigned to: {userName}\nEstimated Completion Date: {completionDate}";
+            task.AssignedTo = assignedTo;
+            task.AssignmentTime = DateTime.Now.ToString();
 
             Console.WriteLine("Task assigned successfully!");
-        }
-
-        private void CompleteTask(TaskItem task)
-        {
-            // Update task details
-            task.Status = "Completed";
-            task.Comments += $"\nCompleted on: {DateTime.Now}";
-
-            Console.WriteLine("Task marked as completed successfully!");
         }
     }
 }
